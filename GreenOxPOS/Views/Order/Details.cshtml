@@ -1,0 +1,403 @@
+﻿@model GreenOxPOS.Models.Order
+
+@{
+
+    var TotalAmount = 0;
+}
+
+@Html.Hidden("hdnRequestType", "")
+
+<table class="table">
+    <tr>
+        <th>
+            Id
+        </th>
+        <th>
+            Name
+        </th>
+        <th>
+            Quantity
+        </th>
+        <th>
+            Amount
+        </th>
+
+        <th></th>
+    </tr>
+
+    @for (int i = 0; i < ViewBag.Product.Count; i++)
+    {
+        TotalAmount += ViewBag.Quantity[i] * ViewBag.Product[i].Price;
+
+        <tr>
+            <td>
+                @ViewBag.Product[i].ProductId
+            </td>
+            <td>
+                @ViewBag.Product[i].ProductName
+            </td>
+            <td>
+                @ViewBag.Quantity[i]
+            </td>
+            <td>
+                @ViewBag.Product[i].Price
+            </td>
+            <td>
+                @(ViewBag.Quantity[i] * ViewBag.Product[i].Price)
+            </td>
+
+        </tr>
+    }
+
+</table>
+<hr />
+<div class="row">
+    <input type="hidden" value="@TotalAmount" id="totalAmount" />
+    <div class="col-sm-12 navbar-form">
+
+        <div class="col-sm-4">
+            <div class="input-group">
+                <div class="input-group-btn">
+                    <select class="form-control" id="slctSearchValue" style="min-width:113px;">
+                        <option value="name">Name</option>
+                        <option value="email">Email</option>
+                        <option value="phoneno" selected="selected">Phone No</option>
+                    </select>
+
+                </div><!-- /input-group -->
+                <input type="text" class="form-control" placeholder="Search Customer" id="customer" onkeypress="SearchCustomer(event)">
+
+            </div><!-- /.col-lg-6 -->
+        </div>
+
+        <button class="btn btn-success" type="button" onclick="SearchCustomer(event)">Find </button>
+        <button class="btn btn-info" type="button" data-toggle="modal" data-target="#modalAddCustomer" onclick="OpenModalCustomer()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> </button>
+        @using (Html.BeginForm("PlaceOrder", "Order", FormMethod.Post, new { id = "placeOrderForm", @class = "navbar-right" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(model => model.Quantity)
+            @Html.HiddenFor(model => model.Product)
+            @Html.HiddenFor(model => model.ProductAmount)
+            @Html.HiddenFor(model => model.Payment)
+
+            @Html.HiddenFor(model => model.Address.Id)
+            @Html.Hidden("hdnAddressId", "0")
+            @Html.Hidden("GUID", ViewBag.GUID as string)
+            <div class="form-group col-sm-6">
+
+                @Html.EditorFor(model => model.DiscountAmount, new { htmlAttributes = new { @class = "form-control", @placeholder = "Discount", @onkeypress = "return PaidAmount(event)" } })
+
+            </div>
+            <button class="btn btn-default navbar-right" type="button" onclick="PlaceOrder()">
+                Place Order <span class="badge">@(TotalAmount)</span> &rarr;
+            </button>
+        }
+
+    </div>
+
+</div>
+<hr />
+<div class="row">
+    <div class="col-sm-12" id="content">
+    </div>
+</div>
+
+<div class="modal fade" id="modalAddCustomer" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Add Customer</h4>
+            </div>
+            <div class="modal-body">
+                @Html.Action("ShowCustomer", "Order")
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="ModalCustomerRequestType()">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // ResetValues();
+            $('#DiscountAmount').val(0);
+            $('#customer').val("");
+
+            //   AlertClose();
+
+        });
+
+        function PaidAmount(evt) {
+            if (isNumber(evt)) {
+                evt = (evt) ? evt : window.event;
+                var charCode = (evt.which) ? evt.which : evt.keyCode;
+
+                if (charCode == 9 || charCode == 13) {
+                    $('.badge')[0].innerText = parseFloat($('#totalAmount').val()) - parseFloat($('#DiscountAmount').val())
+                    return false;
+                }
+
+                return true;
+            }
+            return false;
+        }
+        function isNumber(evt) {
+            evt = (evt) ? evt : window.event;
+            var charCode = (evt.which) ? evt.which : evt.keyCode;
+
+            if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+                return false;
+            }
+            return true;
+        }
+        function PlaceOrder() {
+            if ($('input[name=AddressId]:checked').length > 0) {
+                $('#Address_Id').val($('input[name=AddressId]:checked').val());
+            }
+
+            document.getElementById('placeOrderForm').submit();
+        }
+        function OpenModalCustomer() {
+            $('#hdnRequestType').val('CreateCustomer');
+            $('#myModalLabel').html('Add Customer');
+            ResetCustomer('openModal');
+
+        }
+        function ModalCustomerRequestType() {
+            switch ($('#hdnRequestType').val()) {
+                case 'CreateCustomer': CreateCustomer(); break;
+                case 'UpdateCustomer': EditCustomer(); break;
+            }
+        }
+        function ResetCustomer(val) {
+            ResetErrorClass('Customer_Name');
+            ResetErrorClass('Customer_Email');
+            ResetErrorClass('Customer_PhoneNo');
+            ResetErrorClass('CustAddress');
+
+            switch (val) {
+                case 'openModal': ResetValue('Customer_Name');
+                    ResetValue('Customer_Email');
+                    ResetValue('Customer_PhoneNo');
+                    ResetValue('CustAddress');
+                    ResetValue('Id');
+                    AlertClose();
+                    break;
+            }
+        }
+        function CreateCustomer() {
+            var Customer_Name = $('#Customer_Name').val();
+            var Customer_Email = $('#Customer_Email').val();
+            var Customer_PhoneNo = $('#Customer_PhoneNo').val();
+            var CustAddress = $('#CustAddress').val();
+            var isError = false;
+
+            ResetCustomer('whileOpenModal');
+
+            if (Customer_Name == '') { AddErrorClass('Customer_Name'); isError = true; }
+            if (Customer_Email == '') { AddErrorClass('Customer_Email'); isError = true; }
+            if (Customer_PhoneNo == '' || Customer_PhoneNo.length != 10) { AddErrorClass('Customer_PhoneNo'); isError = true; }
+            if (CustAddress == '') { AddErrorClass('CustAddress'); isError = true; }
+
+            if (isError) {
+                AlertMessage("addCustomerMsg", "Error", "Please add mandatory field")
+                return;
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: "@Url.Action("AddCustomer", "Order")",
+
+                    data: {
+                        "Customer.Name": $("#Customer_Name").val(),
+                        "Customer.Email": $("#Customer_Email").val(),
+                        "Customer.PhoneNo": $("#Customer_PhoneNo").val(),
+                        "CustAddress": $("#CustAddress").val(),
+                        "GUID": $('#GUID').val()
+                    },
+                    success: function (data) {
+                        var json = eval('(' + data + ')');
+                        var appendData = '';
+                        if (json[1][0].Id == "0") { appendData = "<div class='col-sm-12'><p>No Data Found!!</p></div>"; }
+                        else {
+                            appendData = "<div class='col-sm-12'> <div class='input-group'>"
+                                + " <span class='input-group-addon'><input type='radio' aria-label=''name='AddressId' value='" + json[1][0].Id + "'></span>"
+                                + "<div class='form-control'><p> <a href=\"javascript:EditCustomerOpenModal('" + json[1][0].Id + "','" + json[1][0].Name + "','" + json[1][0].PhoneNo + "','" + json[1][0].Email + "','" + json[1][0].Address + "')\">" + json[1][0].Name + "</a>-" + json[1][0].PhoneNo + "-" + json[1][0].Email + "-" + json[1][0].Address + "</p></div>"
+                            + "</div> </div>";
+                        }
+
+                        $("#content").html(appendData);
+                        $('#modalAddCustomer').modal('hide');
+                    }
+                });
+            }
+
+
+
+        }
+        function EditCustomerOpenModal(Id, Name, PhoneNo, Email, Address) {
+
+            ResetCustomer('openModal');
+            $('#myModalLabel').html('Edit Customer');
+            $('#hdnRequestType').val('UpdateCustomer');
+            $('#Id').val(Id);
+            $('#Customer_Name').val(Name);
+            $('#Customer_Email').val(Email);
+            $('#Customer_PhoneNo').val(PhoneNo);
+            $('#CustAddress').val(Address);
+
+            //$('#modalAddCustomer').modal('show');
+            $('#modalAddCustomer').modal({
+                keyboard: true
+            })
+        }
+        function EditCustomer() {
+            ResetCustomer('whileOpenModal');
+
+            var Customer_Name = $('#Customer_Name').val();
+            var Customer_Email = $('#Customer_Email').val();
+            var Customer_PhoneNo = $('#Customer_PhoneNo').val();
+            var CustAddress = $('#CustAddress').val();
+            var isError = false;
+
+            if (Customer_Name == '') { AddErrorClass('Customer_Name'); isError = true; }
+            if (Customer_Email == '') { AddErrorClass('Customer_Email'); isError = true; }
+            if (Customer_PhoneNo == '' || Customer_PhoneNo.length != 10) { AddErrorClass('Customer_PhoneNo'); isError = true; }
+            if (CustAddress == '') { AddErrorClass('CustAddress'); isError = true; }
+
+            if (isError) {
+                AlertMessage("addCustomerMsg", "Error", "Please add mandatory field")
+                return;
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: "@Url.Action("EditCustomer", "Order")",
+
+                    data: {
+                        "Id": $("#Id").val(),
+                        "Customer.Name": $("#Customer_Name").val(),
+                        "Customer.Email": $("#Customer_Email").val(),
+                        "Customer.PhoneNo": $("#Customer_PhoneNo").val(),
+                        "CustAddress": $("#CustAddress").val(),
+                        "GUID": $('#GUID').val()
+                    },
+                    success: function (data) {
+                        var json = eval('(' + data + ')');
+                        var appendDataObj;
+                        var appendData = '';
+
+                        $('input[name=AddressId]').each(function () {
+                            if ($(this).val() == $('#Id').val()) {
+                                appendDataObj = $($(this).parent()[0].nextSibling).html();
+                            }
+                        })
+
+                        if (json[1][0].Id == "0") { appendData = "<p>No Data Found!!</p>"; }
+                        else {
+                            appendData = "<p> <a href=\"javascript:EditCustomerOpenModal('" + json[1][0].Id + "','" + json[1][0].Name + "','" + json[1][0].PhoneNo + "','" + json[1][0].Email + "','" + json[1][0].Address + "')\">" + json[1][0].Name + "</a>-" + json[1][0].PhoneNo + "-" + json[1][0].Email + "-" + json[1][0].Address + "</p>";
+
+                        }
+
+                        // $("#content").html(appendData);
+                        $('input[name=AddressId]').each(function () {
+                            if ($(this).val() == $('#Id').val()) {
+                                $($(this).parent()[0].nextSibling).html(appendData);
+                            }
+                        })
+
+                        $('#modalAddCustomer').modal('hide');
+                    }
+                });
+            }
+
+        }
+        function SearchCustomer(evt) {
+
+            evt = (evt) ? evt : window.event;
+            var charCode = (evt.which) ? evt.which : evt.keyCode;
+
+            if (charCode == 1 || charCode == 9 || charCode == 13) {
+                var SearchTitle = $('#slctSearchValue').val();
+                var SearchText = $('#customer').val();
+                if (SearchText.length < 3) return false;
+
+                $.ajax({
+                    type: 'POST',
+                    url: "@Url.Action("SearchCustomer", "Order")",
+
+                    data: {
+                        "SearchTitle": SearchTitle,
+                        "SearchText": SearchText,
+                        "GUID": $('#GUID').val()
+                    },
+                    success: function (data) {
+                        var json = eval('(' + data + ')');
+                        var appendData = '';
+                        if (json[1][0].Id == "0") { appendData = "<div class='col-sm-12'><p>No Data Found!!</p></div>"; }
+                        else {
+                            appendData = "<div class='col-sm-12'> ";
+                            for (var i = 0; i < json[1].length; i++) {
+                                appendData += "<div class='input-group'>"
+                                + " <span class='input-group-addon'><input type='radio' aria-label=''name='AddressId' value='" + json[1][i].Id + "'></span>"
+                                + "<div class='form-control'><p> <a href=\"javascript:EditCustomerOpenModal('" + json[1][i].Id + "','" + json[1][i].Name + "','" + json[1][i].PhoneNo + "','" + json[1][i].Email + "','" + json[1][i].Address + "')\">" + json[1][i].Name + "</a>-" + json[1][i].PhoneNo + "-" + json[1][i].Email + "-" + json[1][i].Address + "</p></div>"
+                                + "</div> ";
+                            }
+                            appendData += "</div>";
+                        }
+
+                        $("#content").html(appendData);
+                        $('#modalAddCustomer').modal('hide');
+                    }
+                });
+
+            }
+
+        }
+        function ResetValue(id) {
+            $('#' + id).val('');
+        }
+        function ResetErrorClass(id) {
+            $('#' + id).removeClass('error');
+        }
+        function AddErrorClass(id) {
+            $('#' + id).addClass('error');
+        }
+
+        function AlertMessage(id, Title, Val) {
+            if ($('#' + id + ' .alert').length == 0) {
+                $('#' + id).append('<div role="alert" class="alert alert-warning alert-dismissible fade in">'
+                                       + '<button aria-label="Close" data-dismiss="alert" class="close closeMsg" type="button">'
+                                       + '   <span aria-hidden="true">×</span>'
+                                       + '</button> '
+                                       + '<strong>' + Title + '</strong>  ' + Val
+                                       + '</div>');
+            }
+            else {
+                $('#' + id + ' .alert').html('<button aria-label="Close" data-dismiss="alert" class="close closeMsg" type="button">'
+                                       + '   <span aria-hidden="true">×</span>'
+                                       + '</button> '
+                                       + '<strong>' + Title + '</strong>  ' + Val);
+            }
+        }
+        function AlertClose() {
+            if ($('.closeMsg').length > 0)
+                $('.closeMsg').alert('close');
+        }
+    </script>
+}
+
+
+
+<style type="text/css">
+    .error {
+        border: 1px solid red;
+    }
+</style>
+

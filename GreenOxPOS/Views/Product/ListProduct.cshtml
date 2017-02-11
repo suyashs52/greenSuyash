@@ -1,0 +1,51 @@
+﻿@model IEnumerable<GreenOxPOS.Models.Product>
+
+@if (ViewBag.IsAdmin == "True")
+{
+ 
+    <p>
+        @Html.ActionLink("Create New Product", "AddProduct", new { GUID = ViewBag.GUID })
+
+    </p>
+ 
+
+    <p>
+        <h3>
+            @Html.DisplayFor(mI => Model.ElementAt(0).ProductCategory.Name)
+            @Html.ActionLink(" ", "ProductCategory", new { id = Model.ElementAt(0).ProductCategory.PCId, GUID = ViewBag.GUID }, new { @class = "glyphicon glyphicon-pencil" })
+
+        </h3>
+    </p>
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.ProductName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Price)
+            </th>
+            <th></th>
+        </tr>
+
+
+        @foreach (var item in Model)
+        {
+            @(item.IsActive ? Html.Raw("<tr>") : Html.Raw("<tr class=\"label label-danger\">"))
+
+
+
+            <td>
+                @Html.DisplayFor(modelItem => item.ProductName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Price)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "EditProduct", new { id = item.ProductCategory.PCId, ProductId = item.ProductId, ProductName = item.ProductName, Price = item.Price, IsActive = item.IsActive, GUID = ViewBag.GUID }) |
+                @Html.ActionLink("Delete", "DeleteProduct", new { id = item.ProductCategory.PCId, ProductId = item.ProductId, ProductName = item.ProductName, Price = item.Price, IsActive = item.IsActive, GUID = ViewBag.GUID })
+            </td>
+            @Html.Raw("</tr>")
+        }
+
+    </table>
+}

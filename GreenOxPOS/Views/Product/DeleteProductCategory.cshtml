@@ -1,0 +1,41 @@
+﻿@model GreenOxPOS.Models.ProductCategory
+@if (ViewBag.IsAdmin == "True")
+{
+    <h3>Are you sure you want to delete this ProductCategory?</h3>
+    <div>
+         
+        <hr />
+        <hr />
+        <dl class="dl-horizontal">
+
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Name)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.Name)
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.IsActive)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.IsActive)
+            </dd>
+
+        </dl>
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-actions no-color">
+                
+                @Html.Hidden("id",@Model.PCId);
+                <input type="submit" value="Delete" class="btn btn-default" /> |
+                @Html.ActionLink("Back to List", "ProductCategory", new { id = Model.PCId, GUID = ViewBag.GUID })
+            </div>
+        }
+    </div>
+}

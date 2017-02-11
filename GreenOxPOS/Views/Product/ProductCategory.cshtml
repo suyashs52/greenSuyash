@@ -1,0 +1,38 @@
+﻿@model IEnumerable<GreenOxPOS.Models.ProductCategory>
+@if (ViewBag.IsAdmin == "True")
+{
+    <p>
+        @Html.ActionLink("Create New", "AddProductCategory", new { id = ViewBag.Id, GUID = ViewBag.GUID })
+    </p>
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.PCId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            @(item.IsActive ? Html.Raw("<tr>") : Html.Raw("<tr class=\"label label-danger\">"))
+                <td>
+                    @Html.DisplayFor(modelItem => item.PCId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.ActionLink("Edit", "EditProductCategory", new { PCId = item.PCId, Name = item.Name, IsActive = item.IsActive, GUID = ViewBag.GUID }) |
+                    @Html.ActionLink("Delete", "DeleteProductCategory", new { PCId = item.PCId, Name = item.Name, IsActive = item.IsActive, GUID = ViewBag.GUID })
+                </td>
+            @Html.Raw("</tr>")
+        }
+
+    </table>
+}
+<p>
+    @Html.ActionLink("Back to List", "ListProduct", new { id = ViewBag.Id, GUID = ViewBag.GUID })
+</p>

@@ -1,0 +1,132 @@
+﻿@model IEnumerable<GreenOxPOS.Models.Product>
+@if (ViewBag.IsAdmin == "True")
+{
+    <p>
+        @Html.ActionLink("Create New Product", "AddProduct", new { GUID = ViewBag.GUID })
+
+    </p>
+}
+@{
+    ViewBag.Title = "Product";
+
+}
+<p>
+    <a href="" target="_blank" onclick="" id="orderDetails" style="display:none">hello</a>
+
+</p>
+<div class="btn-group" role="group" aria-label="...">
+    <button type="button" class="btn btn-primary btn-sm" onclick="RedirectToOrder()">Place Order</button>
+    <button type="button" class="btn btn-default btn-sm">&nbsp;</button>
+    <button type="button" class="btn btn-danger btn-sm" onclick="ResetValues()">Reset</button>
+
+</div>
+<div id="messages"></div>
+
+
+<div class="row">
+    @{
+        var pcId = Model.Select(f => f.ProductCategory.PCId).Distinct();
+
+        foreach (var item in pcId)
+        {
+            var product = Model.Where(f => f.ProductCategory.PCId == item);
+
+            if (product.Count() > 0)
+            {
+
+                <div class="col-sm-6 col-md-6">
+                    <div class="thumbnail">
+
+                        <div class="caption">
+                            <h3>
+                                @Html.DisplayFor(mI => product.ElementAt(0).ProductCategory.Name)
+
+                                @if (ViewBag.IsAdmin == "True")
+                                {
+                                    @Html.ActionLink(" ", "ListProduct", new { id = product.ElementAt(0).ProductCategory.PCId, GUID = ViewBag.GUID }, new { @class = "glyphicon glyphicon-pencil" })
+                                }
+
+                            </h3>
+                            @foreach (var pro in product)
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-6"><p>@Html.DisplayFor(mI => pro.ProductName)</p></div>
+                                    <div class="col-md-4">@Html.DisplayFor(mI => pro.Price)</div>
+                                    <div class="col-md-2"><p><input type="number" class="pQuantity" id="@pro.ProductId" style="border: 1px dashed black; width: 53px;" value="0" min="1" max="100" step="1"></p></div>
+                                </div>
+                            }
+
+                            <p>
+                                <hr />
+                                &nbsp;
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            }
+        }
+
+    }
+
+</div>
+@section Scripts {
+    <script type="text/javascript">
+        var IsNextOrder = false;
+        $(document).ready(function () {
+           // ResetValues();
+            $('.pQuantity').on('click', function () {
+                IsNextOrder = true;
+                AlertClose();
+            })
+        });
+        function RedirectToOrder() {
+            var id = '';
+            var quantity = ''
+
+            $('.pQuantity').each(function () {
+                if ($(this).val() > 0) {
+                    id += this.id + ',';
+                    quantity +=this.value + ',';
+                }
+            })
+
+            if (id.length == 0) {
+                AlertMessage('Order Error!', 'Please Select any Order.');
+            }
+            else {
+                if (IsNextOrder) {
+                    id = id.substr(0, id.length - 1);
+                    quantity = quantity.substr(0, quantity.length - 1);
+
+                    $('.close').alert('close');
+                    $('#orderDetails').attr('href', '../Order/Details?p=' + id + '&q=' + quantity);
+                    $('#orderDetails')[0].click();
+                }
+                else {
+                    AlertMessage('Order Error!', 'Please Reset All Order.');
+                }
+            }
+        }
+        function ResetValues() {
+            $('.pQuantity').each(function () {
+                IsNextOrder = false;
+                AlertClose();
+                $(this).val(0);
+
+            })
+        }
+        function AlertMessage(Title, Val) {
+            $('#messages').append('<div role="alert" class="alert alert-warning alert-dismissible fade in">'
+                                   + '<button aria-label="Close" data-dismiss="alert" class="close" type="button">'
+                                   + '   <span aria-hidden="true">×</span>'
+                                   + '</button> '
+                                   + '<strong>' + Title + '</strong>  ' + Val
+                                   + '</div>');
+        }
+        function AlertClose() {
+            if ($('.close').length > 0)
+                $('.close').alert('close');
+        }
+    </script>
+}

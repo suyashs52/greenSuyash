@@ -15,6 +15,9 @@ namespace GreenOxPOS.Models
         public string ProductAmount { get; set; }
         public float DiscountAmount { get; set; }
         public float Payment { get; set; }
+        public DateTime CreatedOn { get; set; }
+        public string CreatedBy { get; set; }
+
 
 
     }

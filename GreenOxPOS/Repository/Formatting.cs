@@ -149,7 +149,33 @@ namespace GreenOxPOS.Repository
                 return 0;
             }
         }
-
+        public static float ConvertNullToFloat(object oValue)
+        {
+            try
+            {
+                if (oValue != System.DBNull.Value)
+                {
+                    float i = 0;
+                    Boolean isFloat = Single.TryParse(oValue.ToString(), out i);
+                    if (isFloat == true)
+                    {
+                        return i;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                return 0;
+            }
+        }
         public static string ConvertDateTimeToAmPmString(object oValue)
         {
             try

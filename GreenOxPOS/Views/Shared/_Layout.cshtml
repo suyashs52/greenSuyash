@@ -4,7 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - GreenNox</title>
-    @Styles.Render("~/Content/css")
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+     
     @Scripts.Render("~/bundles/modernizr")
 
 </head>
@@ -35,11 +36,11 @@
         </div>
     </div>
     <div class="container body-content">
-        <br/><br />
+        <br/><br /><br /><br />
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - GreenOx</p>
+            <p>&copy; @DateTime.Now.Year - GreeNox</p>
         </footer>
     </div>
 

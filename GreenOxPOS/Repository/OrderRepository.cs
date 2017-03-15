@@ -18,7 +18,7 @@ namespace GreenOxPOS.Repository
             string conStr = ConfigurationManager.ConnectionStrings["GreenOxConn"].ToString();
             conn = new SqlConnection(conStr);
         }
-        public bool PlaceOrder(Order o, string RequestType)
+        public bool PlaceOrder(Order o, string UserName, string RequestType)
         {
             connection();
             try
@@ -32,10 +32,16 @@ namespace GreenOxPOS.Repository
                 cmd.Parameters.AddWithValue("@Fk_PerProduct_Amount", o.ProductAmount);
                 cmd.Parameters.AddWithValue("@Discount_OnAmount", o.DiscountAmount);
                 cmd.Parameters.AddWithValue("@Payment", o.Payment);
+                cmd.Parameters.AddWithValue("@Fk_UserName", UserName);
+                cmd.Parameters.Add(new SqlParameter("@OrderId", SqlDbType.BigInt));
+                cmd.Parameters["@OrderId"].Direction = ParameterDirection.Output;
 
                 conn.Open();
                 cmd.ExecuteNonQuery();
                 conn.Close();
+
+                o.id = Formatting.ConvertNullToInt64(cmd.Parameters["@OrderId"].Value);
+
 
                 return true;
 
@@ -51,7 +57,64 @@ namespace GreenOxPOS.Repository
                 if (conn.State == ConnectionState.Open) conn.Close();
             }
         }
+        public long ListOrder(DateTime From, DateTime To, int size, int offset, ref List<Order> o, string RequestType = "ListOrder")
+        {
+            connection();
+            try
+            {
+                SqlCommand cmd = new SqlCommand("su_sp_ListOrder", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@RequestType", RequestType);
+                cmd.Parameters.AddWithValue("@StartDate", From);
+                cmd.Parameters.AddWithValue("@EndDate", To);
+                cmd.Parameters.AddWithValue("@PageNo", offset);
+                cmd.Parameters.AddWithValue("@PageSize", size);
+                cmd.Parameters.Add(new SqlParameter("@TotalCount", SqlDbType.BigInt));
+                cmd.Parameters["@TotalCount"].Direction = ParameterDirection.Output;
 
+
+                conn.Open();
+                SqlDataReader dr = cmd.ExecuteReader();
+                Order or;
+
+                while (dr.Read())
+                {
+                    or = new Order();
+                    or.id = Formatting.ConvertNullToInt64(dr["id"]);
+                    or.Product = Formatting.ConvertNullToString(dr["Fk_Product_Id"]);
+                    or.Quantity = Formatting.ConvertNullToString(dr["Fk_Product_Quantity"]);
+                    or.ProductAmount = Formatting.ConvertNullToString(dr["Fk_PerProduct_Amount"]);
+                    or.DiscountAmount = Formatting.ConvertNullToFloat(dr["Discount_OnAmount"]);
+                    or.Payment = Formatting.ConvertNullToFloat(dr["Payment"]);
+                    or.CreatedOn = Formatting.ConvertNullToDateTime(dr["CreatedOn"]);
+                    or.CreatedBy = Formatting.ConvertNullToString(dr["username"]);
+                    or.Address = new Address();
+                    or.Address.Id = Formatting.ConvertNullToInt64(dr["Fk_Cusomer_Address_Id"]);
+                    or.Address.CustAddress = Formatting.ConvertNullToString(dr["Name"]) + "," + Formatting.ConvertNullToString(dr["PhoneNo"]);
+
+
+                    o.Add(or);
+
+                }
+
+
+                dr.Close();
+                conn.Close();
+
+                return Formatting.ConvertNullToInt64(cmd.Parameters["@TotalCount"].Value);
+
+            }
+            catch (Exception ex)
+            {
+                Errorlog(ex, this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
+
+                return 0;
+            }
+            finally
+            {
+                if (conn.State == ConnectionState.Open) conn.Close();
+            }
+        }
         public bool AddEditCustomer(Address a, string RequestType)
         {
             connection();
@@ -102,7 +165,7 @@ namespace GreenOxPOS.Repository
                 cmd.Parameters.AddWithValue("@SearchText", SearchText);
 
                 conn.Open();
-                 
+
                 SqlDataReader dr = cmd.ExecuteReader();
                 Address a;
                 Customer c;

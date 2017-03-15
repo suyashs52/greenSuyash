@@ -55,7 +55,7 @@ namespace GreenOxPOS.Controllers
                         UserAdmin.Expires = DateTime.Now.AddHours(6);
                         HttpContext.Response.Cookies.Add(UserAdmin);
 
-                       
+
                         HttpContext.Cache[u.UserName + "User"] = u.UserName;
 
                         return RedirectToAction("Product", "Product", new { GUID=sGUID});

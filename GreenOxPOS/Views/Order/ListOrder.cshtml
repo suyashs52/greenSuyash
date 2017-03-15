@@ -1,0 +1,147 @@
+﻿@if (ViewBag.IsAdmin == "True")
+{
+
+
+    @Html.Hidden("GUID", ViewBag.GUID as string)
+    <div class="row">
+        <div class="btn-group btn-group col-md-10" role="group" aria-label="...">
+            <div class="btn-group" role="group">
+                <div class="input-group">
+                    <span class="input-group-addon" id="basic-addon1">From</span>
+                    <input type="text" id="datepicker1" class="form-control" aria-describedby="basic-addon1">
+                </div>
+
+            </div>
+            <div class="btn-group" role="group">
+                <div class="input-group">
+                    <span class="input-group-addon" id="basic-addon1">To</span>
+                    <input type="text" id="datepicker2" class="form-control" aria-describedby="basic-addon1">
+                </div>
+            </div>
+            <div class="btn-group" role="group">
+                <div class="input-group">
+                    <span class="input-group-addon" id="basic-addon1">Size</span>
+                    <select id="size" class="form-control" aria-describedby="basic-addon1">
+                        <option value="2">2</option>
+                        <option value="10">10</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+            <div class="btn-group" role="group">
+                <div class="btn-group" role="group">
+                    <button type="button" id="count" class="btn btn-default">Total</button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="btn-toolbar col-md-2" role="toolbar" aria-label="...">
+            <input type="button" class="btn btn-default" onclick="ShowOrder()" value="Submit" />
+        </div>
+
+
+    </div>
+    <br />
+    <div class="panel panel-default">
+        <!-- Default panel contents -->
+        <div class="panel-heading">Order List For Page <span id="pageno"></span></div>
+
+        <!-- Table -->
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Order Id</th>
+                    <th>Name</th>
+                    <th>Discount</th>
+                    <th>Payment</th>
+                    <th>Order Date</th>
+                    <th>By</th>
+                </tr>
+            </thead>
+            <tbody id="tdbody">
+                 <tr><td colspan="5">Please select range</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <nav aria-label="...">
+        <ul class="pager" id="pager" style="display:none;">
+            <li class="previous" onclick="NextPage('prev')"><a href="#"><span aria-hidden="true">&larr;</span> Older</a></li>
+            <li class="next" onclick="NextPage('next')"><a href="#">Newer <span aria-hidden="true">&rarr;</span></a></li>
+        </ul>
+    </nav>
+
+    <link rel="stylesheet" href="~/Content/bootstrap-datetimepicker.css" />
+    @section Scripts {
+        <script src="~/Scripts/moment.min.js"></script>
+        <script src="~/Scripts/bootstrap-datetimepicker.min.js"></script>
+
+        <script type="text/javascript">
+            $('#datepicker1').datetimepicker({ defaultDate: new Date() });
+            $('#datepicker2').datetimepicker({ defaultDate: new Date() });
+            var nextValue = 1;
+            function ShowOrder() {
+                if ($("#datepicker1").val() == '' || $("#datepicker2").val() == '') return;
+                if (nextValue < 1) nextValue = 1;
+                $.ajax({
+                    type: 'POST',
+                    url: "@Url.Action("ListOrderRecord", "Order")",
+
+                    data: {
+                        "From": $("#datepicker1").val(),
+                        "To": $("#datepicker2").val(),
+                        "Size": $("#size option:selected").val(),
+                        "Offset": nextValue,
+                        "GUID": $('#GUID').val()
+                    },
+                    success: function (data) {
+                        var json = eval('(' + data + ')');
+                        var appendData = '';
+
+                        if (json[1].length == 0) { appendData = "<tr><td colspan='5'>No Data found!</td></tr>"; }
+                        else {
+                            for (var i = 0; i < json[1].length; i++) {
+                                appendData += "<tr> <td><a href='/Order/PrintOrder?GUID=" + $('#GUID').val() + "&p=" + json[1][i].Product + "&q=" + json[1][i].Quantity + "&a=" + json[1][i].DiscountAmount + "," + json[1][i].Payment + "&o=" + json[1][i].Id + "," + json[1][i].CustAddress + "' target='_blank' >" + json[1][i].Id + "</a></td> "
+                                            + "<td>" + json[1][i].CustAddress.substring(0, json[1][i].CustAddress.indexOf(',')) + "</td> "
+                                            + "<td>" + json[1][i].DiscountAmount + "</td> "
+                                            + "<td>" + json[1][i].Payment + "</td> "
+                                            + "<td>" + json[1][i].CreatedOn + "</td> "
+                                            + "<td>" + json[1][i].CreatedBy + "</td></tr>";
+                            }
+
+                        }
+                        $('#count').empty().html(json[2][0].count);
+
+                        if (json[2][0].count > parseInt($("#size option:selected").val())) $('#pager').show();
+
+                        $('#pager').children().show();
+
+                        $('#pageno').empty().html(nextValue)
+                        if (nextValue <= 1) {
+                            $('#pager').find('.previous').hide();
+
+                        }
+                        if (nextValue >= json[2][0].count / parseInt($("#size option:selected").val())) {
+                            $('#pager').find('.next').hide();
+                        }
+
+                        $("#tdbody").empty().append(appendData);
+
+                    }
+                });
+            }
+
+            function NextPage(val) {
+                var totalData = parseInt($('#count').html());
+                var size = parseInt($("#size option:selected").val());
+
+                if (val == "prev" && nextValue > 1) nextValue = nextValue - 1;
+                else if (val == "next" && nextValue < totalData / size) nextValue = nextValue + 1;
+                ShowOrder();
+            }
+
+        </script>
+    }
+
+}

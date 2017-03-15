@@ -196,7 +196,7 @@ namespace GreenOxPOS.Controllers
                     //cache value reset
                     foreach (var item in lp)
                     {
-                        if (item.ProductId == id)
+                        if (item.ProductId == p.ProductId)
                         {
                             item.Price = p.Price;
                             item.ProductName = p.ProductName;
@@ -263,7 +263,7 @@ namespace GreenOxPOS.Controllers
                     ViewBag.AlertMsg = "Product  deleted successfully";
 
                     List<Product> lp = (List<Product>)HttpRuntime.Cache[Enums.Cache.Product.ToString()];
-                     
+
                     foreach (var item in lp)
                     {
                         if (item.ProductCategory.PCId == id)
@@ -272,7 +272,7 @@ namespace GreenOxPOS.Controllers
                             break;
                         }
                     }
-                     
+
                 }
                 return RedirectToAction("Product", new { GUID = Request["GUID"] });
 
@@ -458,7 +458,7 @@ namespace GreenOxPOS.Controllers
                         if (item.ProductCategory.PCId == id)
                         {
                             lp.Remove(item);
- 
+
                         }
                     }
 
@@ -497,6 +497,8 @@ namespace GreenOxPOS.Controllers
                 if (ResetCache())
                 {
                     ModelState.AddModelError("Success", "Reset Successfull!");
+                    return RedirectToAction("Product", new { GUID = Request["GUID"] });
+
                 }
                 else
                 {

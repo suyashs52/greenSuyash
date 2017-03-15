@@ -2,9 +2,50 @@
 @{
     Layout = null;
 }
-<div class="row">
+
+@*<input id="PrintButton" type="button" name="Print" value="Print" class="btn btn-default" />*@
+
+<div class="row" style=" background-color: #fcffff; ">
     <div class="col-sm-6 col-md-4">
-        <table style="text-align: center;">
+        <table style="text-align: left;">
+            <tr>
+                <td colspan="2" style="padding-left: 34px;">
+                    <img src="/Images/greenox_bill.jpg" alt="GreeNox">
+                </td>
+            </tr>
+
+            <tr>
+                <td>CIN</td>
+                <td style="text-align: left;padding-left: 20px;">U74999DL2016PTC298132</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td>FSSAI</td>
+                <td style="text-align: left;padding-left: 20px;">2271651000276</td>
+                <td>&nbsp;</td>
+            </tr>
+            @if (ViewBag.Order[1].Length > 0)
+            {
+                <tr>
+                    <td>Name</td>
+                    <td style="text-align: left;padding-left: 20px;">@ViewBag.Order[1] (@ViewBag.Order[2])</td>
+                    <td>&nbsp;</td>
+                </tr>
+            }
+            <tr>
+                <td>Order No</td>
+                <td style="text-align: left;padding-left: 20px;">@ViewBag.Order[0]</td>
+                <td>&nbsp;</td>
+            </tr>
+
+            <tr>
+                <td>Order Date</td>
+                <td style="text-align: left;padding-left: 20px;">@DateTime.Now </td>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+        <table style="text-align: center; border-bottom: 2px solid black; padding-bottom: 10px;border-top: 2px solid black; padding-top: 10px;">
+
             <tr>
                 <th width="60%">Name</th>
                 <th width="20%">Quantity</th>
@@ -21,7 +62,7 @@
             }
         </table>
 
-        <hr />
+
         @if (ViewBag.Amount[0] > 0)
         {
             <div class="caption">
@@ -47,11 +88,105 @@
 
 
         </div>
-        <hr />
+
+
         <div class="caption">
 
-            <p>GreenOx-Please Visit Again</p>
+            <p>**Thank You**</p>
+            <p>**Please visit Again**</p>
+            <p>-------------------------------------------</p>
+            <address>
+                <strong>For Support and Feedback</strong> <br />  <a href="mailto:support@greenox.in">support@greenox.in</a>
+                @* <strong>Feedback:</strong> <a href="mailto:feedback@greenox.in">feedback@greenox.in</a>*@
+            </address>
 
         </div>
     </div>
-</div>
+    <div class="col-sm-6 col-md-4">
+        <div class="caption">
+
+            <p>
+                
+                --------------------------------------------------------
+            </p>
+
+        </div>
+        <table style="text-align: left;">
+            <tr>
+                <td colspan="2" style="padding-left: 34px;">
+                    <img src="/Images/greenox_bill.jpg" alt="GreeNox">
+                </td>
+            </tr>
+
+
+            @if (ViewBag.Order[1].Length > 0)
+            {
+                <tr>
+                    <td>Name</td>
+                    <td style="text-align: left;padding-left: 20px;">@ViewBag.Order[1]</td>
+                    <td>&nbsp;</td>
+                </tr>
+            }
+            <tr>
+                <td>Order No</td>
+                <td style="text-align: left;padding-left: 20px;">@ViewBag.Order[0]</td>
+                <td>&nbsp;</td>
+            </tr>
+
+            <tr>
+                <td>Order Date</td>
+                <td style="text-align: left;padding-left: 20px;">@DateTime.Now </td>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+        <table style="text-align: center; border-bottom: 2px solid black; padding-bottom: 10px;border-top: 2px solid black; padding-top: 10px;">
+
+            <tr>
+                <th width="60%">Name</th>
+                <th width="20%">Quantity</th>
+                
+            </tr>
+            @for (int i = 0; i < ViewBag.Product.Count; i++)
+            {
+                <tr>
+                    <td style="text-align: left;"><p>@ViewBag.Product[i].ProductName</p></td>
+                    <td>@ViewBag.Quantity[i]</td>
+                    
+
+                </tr>
+            }
+        </table>
+    </div>
+    <style media="print">
+        @@page {
+            size: auto;
+            margin: 0;
+        }
+
+        html {
+            background-color: #FFFFFF;
+            margin: 0px; /* this affects the margin on the HTML before sending to printer */
+        }
+
+        body {
+            border: 0px solid black;
+            padding: 1mm 1mm;
+            margin: 2mm 50mm 20mm 10mm;
+        }
+    </style>
+    @*<script src="~/JS/jquery-1.6.2.js"></script>
+        <script src="~/JS/jquery.jqprint-0.3.js"></script>
+        <script type="text/javascript">
+            $(function () {
+                $("#PrintButton").click(function () {
+                    $('.row').jqprint();
+                    return false;
+                });
+            });
+        </script>*@
+    <script type="text/javascript">
+        history.pushState(null, null, document.URL);
+        window.addEventListener('popstate', function () {
+            history.pushState(null, null, document.URL);
+        });
+    </script>

@@ -52,8 +52,60 @@ namespace GreenOxPOS.Controllers
             }
             else return RedirectToAction("AddProduct", new { GUID = ViewBag.GUID });
         }
+        public ActionResult ListOrder(string GUID)
+        {
+            if (ValidatedUser())
+            { }
+            return View();
+
+        }
+        public ActionResult ListOrderRecord(string From, string To, int size, int Offset, string GUID)
+        {
+
+            try
+            {
+                List<Order> o = new List<Order>();
+                OrderRepository or = new OrderRepository();
+                long count= or.ListOrder(DateTime.Parse(From), DateTime.Parse(To), size, Offset, ref o);
+                if (o.Count() > 0)
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append("{\"1\":[");
+                    foreach (Order obj in o)
+                    {
+                        sb.Append("{\"Id\":\"" + obj.id + "\"");
+                        sb.Append(",\"Product\":\"" + obj.Product + "\"");
+                        sb.Append(",\"Quantity\":\"" + obj.Quantity + "\"");
+                        sb.Append(",\"ProductAmount\":\"" + obj.ProductAmount + "\"");
+                        sb.Append(",\"DiscountAmount\":\"" + obj.DiscountAmount + "\"");
+                        sb.Append(",\"Payment\":\"" + obj.Payment + "\"");
+                        sb.Append(",\"CreatedOn\":\"" + obj.CreatedOn + "\"");
+                        sb.Append(",\"CreatedBy\":\"" + obj.CreatedBy + "\"");
+                        sb.Append(",\"AddressId\":\"" + obj.Address.Id + "\"");
+                        sb.Append(",\"CustAddress\":\"" + obj.Address.CustAddress + "\"},");
+                    }
+                    sb.Append("],\"2\":[{\"count\":"+count+"}]}");
+                    return Content(sb.ToString());
+
+                }
+                else
+                {
+                    return Content("{\"1\":[],\"2\":[{\"count\":" + count + "}]}");
+
+                }
+            }
+            catch (Exception ex)
+            {
+                OrderRepository.Errorlog(ex, this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
+            }
+
+            return View();
+
+        }
+
+
         [HttpPost]
-        public ActionResult PlaceOrder(Order o)
+        public ActionResult PlaceOrder(Order o, string name, string phoneno)
         {
             try
             {
@@ -63,15 +115,30 @@ namespace GreenOxPOS.Controllers
                     if (ModelState.IsValid)
                     {
                         int[] arrProduct = o.ProductAmount.Split(',').Select(f => Formatting.ConvertNullToInt32(f)).ToArray();
-                        foreach (int i in arrProduct)
-                            o.Payment += i;
+                        int[] arrProductQantity = o.Quantity.Split(',').Select(f => Formatting.ConvertNullToInt32(f)).ToArray();
+                        string UserName = string.Empty;
+                        if (Request["GUID"] == null) { }
+                        else
+                        {
+                            string guid = Request["GUID"];
 
+                            if (HttpContext.Request.Cookies[guid + "User"] == null) { }
+                            else
+                            {
+                                UserName = HttpContext.Request.Cookies[guid + "User"].Value;
+                            }
+                        }
+                        o.Payment = 0;
+                        for (int i = 0; i < arrProduct.Length; i++)
+                        {
+                            o.Payment += arrProduct[i] * arrProductQantity[i];
+                        }
                         o.Payment = o.Payment - o.DiscountAmount;
 
                         OrderRepository or = new OrderRepository();
-                        if (or.PlaceOrder(o, "CreateOrder"))
+                        if (or.PlaceOrder(o, UserName, "CreateOrder"))
                         {
-                            return RedirectToAction("PrintOrder", "Order", new { p = o.Product, q = o.Quantity, a = o.DiscountAmount + "," + o.Payment });
+                            return RedirectToAction("PrintOrder", "Order", new { GUID = ViewBag.GUID, p = o.Product, q = o.Quantity, a = o.DiscountAmount + "," + o.Payment, o = o.id + "," + name + "," + phoneno });
                             // PrintOrder(o);
                         }
                         else return View();
@@ -85,7 +152,7 @@ namespace GreenOxPOS.Controllers
             }
             return View();
         }
-        public ActionResult PrintOrder(string p, string q, string a)
+        public ActionResult PrintOrder(string GUID, string p, string q, string a, string o)
         {
             ValidatedUser();
             if (PopulateCache())
@@ -95,6 +162,7 @@ namespace GreenOxPOS.Controllers
                     int[] arrProductId = p.Split(',').Select(f => Formatting.ConvertNullToInt32(f)).ToArray();
                     int[] arrProductQuantity = q.Split(',').Select(f => Formatting.ConvertNullToInt32(f)).ToArray();
                     int[] arrProductAmount = a.Split(',').Select(f => Formatting.ConvertNullToInt32(f)).ToArray();
+                    string[] arrOrder = o.Split(',').Select(f => Formatting.ConvertNullToString(f)).ToArray();
 
                     List<Product> prod = (List<Product>)HttpRuntime.Cache[Enums.Cache.Product.ToString()];
 
@@ -103,6 +171,8 @@ namespace GreenOxPOS.Controllers
                     ViewBag.Product = prod;
                     ViewBag.Quantity = arrProductQuantity;
                     ViewBag.Amount = arrProductAmount;
+                    ViewBag.Order = arrOrder;
+
                     return View();
                 }
                 catch (Exception ex)

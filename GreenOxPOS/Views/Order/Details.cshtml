@@ -9,9 +9,7 @@
 
 <table class="table">
     <tr>
-        <th>
-            Id
-        </th>
+        
         <th>
             Name
         </th>
@@ -30,9 +28,7 @@
         TotalAmount += ViewBag.Quantity[i] * ViewBag.Product[i].Price;
 
         <tr>
-            <td>
-                @ViewBag.Product[i].ProductId
-            </td>
+             
             <td>
                 @ViewBag.Product[i].ProductName
             </td>
@@ -81,6 +77,8 @@
             @Html.HiddenFor(model => model.Payment)
 
             @Html.HiddenFor(model => model.Address.Id)
+            @Html.Hidden("name","")
+            @Html.Hidden("phoneno", "")
             @Html.Hidden("hdnAddressId", "0")
             @Html.Hidden("GUID", ViewBag.GUID as string)
             <div class="form-group col-sm-6">
@@ -139,6 +137,7 @@
                 var charCode = (evt.which) ? evt.which : evt.keyCode;
 
                 if (charCode == 9 || charCode == 13) {
+                    if ($('#DiscountAmount').val() == "") $('#DiscountAmount').val("0")
                     $('.badge')[0].innerText = parseFloat($('#totalAmount').val()) - parseFloat($('#DiscountAmount').val())
                     return false;
                 }
@@ -159,7 +158,11 @@
         function PlaceOrder() {
             if ($('input[name=AddressId]:checked').length > 0) {
                 $('#Address_Id').val($('input[name=AddressId]:checked').val());
+                $('#name').val($('input[name=AddressId]:checked').parent().siblings().children().children()[0].innerHTML);
+                $('#phoneno').val($('input[name=AddressId]:checked').parent().siblings().children().children()[0].nextSibling.nodeValue.split('-')[1]);
             }
+            if ($('#DiscountAmount').val() == "")
+                $('#DiscountAmount').val("0");
 
             document.getElementById('placeOrderForm').submit();
         }

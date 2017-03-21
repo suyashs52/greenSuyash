@@ -99,7 +99,7 @@ namespace GreenOxPOS.Controllers
                 OrderRepository.Errorlog(ex, this.GetType().Name, System.Reflection.MethodBase.GetCurrentMethod().Name);
             }
 
-            return View();
+            return Content("{\"1\":[],\"2\":[{\"count\":" + 0 + "}]}");
 
         }
 

@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Web;
 
 namespace GreenOxPOS.Repository
 {
-    public class OrderRepository
+    public class OrderRepository : ErrorRepository
     {
         private static SqlConnection conn;
 
@@ -204,32 +205,10 @@ namespace GreenOxPOS.Repository
 
         }
 
-        public static void Errorlog(Exception ex, string FormName, string FunctionName)
-        {
-            connection();
-            try
-            {
-                string Query = "insert into sais_admin..ErrorLog (Message, Stack, FormName, FunctionName) ";
-                Query += "values(@Message, @Stack, @FormName, @FunctionName)";
+      
 
-
-                SqlCommand cmd = new SqlCommand(Query, conn);
-                cmd.Parameters.AddWithValue("@Message", (ex.InnerException != null) ? ex.InnerException.ToString().Replace("'", "\"") : ex.Message);
-                cmd.Parameters.AddWithValue("@Stack", ex.StackTrace.ToString().Replace("'", "\""));
-                cmd.Parameters.AddWithValue("@FormName", FormName);
-                cmd.Parameters.AddWithValue("@FunctionName", FunctionName.Replace(".ctor", "Constructor"));
-
-                conn.Open();
-                cmd.ExecuteNonQuery();
-                conn.Close();
-
-
-
-            }
-            catch
-            {
-
-            }
-        }
     }
+
+
+
 }

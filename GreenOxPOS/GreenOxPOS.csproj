@@ -177,10 +177,13 @@
     <Compile Include="Models\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repository\Constant.cs" />
+    <Compile Include="Repository\ErrorRepository.cs" />
+    <Compile Include="Repository\ExceptionLog.cs" />
     <Compile Include="Repository\Formatting.cs" />
     <Compile Include="Repository\OrderRepository.cs" />
     <Compile Include="Repository\ProductRepository.cs" />
     <Compile Include="Repository\UserRepository.cs" />
+    <Compile Include="Repository\XmlSerialization.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -358,6 +361,7 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="Views\Product\ResetPopulateCache.cshtml" />
+    <Content Include="Views\Order\ListOrderRecord.cshtml" />
     <Content Include="Views\Order\ListOrder.cshtml" />
   </ItemGroup>
   <ItemGroup>

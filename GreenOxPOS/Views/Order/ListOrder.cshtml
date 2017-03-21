@@ -1,35 +1,36 @@
-﻿@if (ViewBag.IsAdmin == "True")
+﻿ 
+@if (ViewBag.IsAdmin == "True")
 {
 
 
     @Html.Hidden("GUID", ViewBag.GUID as string)
     <div class="row">
         <div class="btn-group btn-group col-md-10" role="group" aria-label="...">
-            <div class="btn-group" role="group">
+            <div class="btn-group  col-md-4" role="group">
                 <div class="input-group">
                     <span class="input-group-addon" id="basic-addon1">From</span>
                     <input type="text" id="datepicker1" class="form-control" aria-describedby="basic-addon1">
                 </div>
 
             </div>
-            <div class="btn-group" role="group">
+            <div class="btn-group col-md-4" role="group">
                 <div class="input-group">
                     <span class="input-group-addon" id="basic-addon1">To</span>
                     <input type="text" id="datepicker2" class="form-control" aria-describedby="basic-addon1">
                 </div>
             </div>
-            <div class="btn-group" role="group">
+            <div class="btn-group  col-md-3" role="group">
                 <div class="input-group">
                     <span class="input-group-addon" id="basic-addon1">Size</span>
                     <select id="size" class="form-control" aria-describedby="basic-addon1">
-                        <option value="2">2</option>
+                        
                         <option value="10">10</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
                     </select>
                 </div>
             </div>
-            <div class="btn-group" role="group">
+            <div class="btn-group  col-md-1" role="group">
                 <div class="btn-group" role="group">
                     <button type="button" id="count" class="btn btn-default">Total</button>
                 </div>
@@ -61,7 +62,7 @@
                 </tr>
             </thead>
             <tbody id="tdbody">
-                 <tr><td colspan="5">Please select range</td></tr>
+                <tr><td colspan="5">Please select range</td></tr>
             </tbody>
         </table>
     </div>
@@ -78,8 +79,8 @@
         <script src="~/Scripts/bootstrap-datetimepicker.min.js"></script>
 
         <script type="text/javascript">
-            $('#datepicker1').datetimepicker({ defaultDate: new Date() });
-            $('#datepicker2').datetimepicker({ defaultDate: new Date() });
+            $('#datepicker1').datetimepicker({ defaultDate: new Date(),format: 'YYYY-MM-DD' });
+            $('#datepicker2').datetimepicker({ defaultDate: new Date(), format: 'YYYY-MM-DD' });
             var nextValue = 1;
             function ShowOrder() {
                 if ($("#datepicker1").val() == '' || $("#datepicker2").val() == '') return;
